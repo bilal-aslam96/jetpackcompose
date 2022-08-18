@@ -12,8 +12,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
@@ -24,29 +29,26 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
-import com.example.jetpackcompose.ui.theme.JetpackcomposeTheme
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.JdkConstants
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.jetpackcompose.ui.theme.BottomNavItem
+import com.example.jetpackcompose.ui.theme.BottomNavWithBadgesTheme
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
+    @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //for your own font
@@ -57,52 +59,198 @@ class MainActivity : ComponentActivity() {
 
             //ConstrainLayout()
 
-           // Animation()
+            // Animation()
 
 //            CircularProgressbar(
 //                percentage = 0.8f, 100,
 //            )
 
 
+            BottomNavWithBadgesTheme {
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = {
+                        BottomNav(
+                            items = listOf(
+                                BottomNavItem(
+                                    name = "Home",
+                                    route = "home",
+                                    icon = Icons.Default.Home
+                                ),
+                                BottomNavItem(
+                                    name = "Chat",
+                                    route = "chat",
+                                    icon = Icons.Default.Notifications,
+                                    badgeCount = 23
+                                ),
+                                BottomNavItem(
+                                    name = "Settings",
+                                    route = "settings",
+                                    icon = Icons.Default.Settings,
+                                    badgeCount = 214
+                                ),
+                            ),
+                            nav = navController,
+                            onItemClick = {
+                                navController.navigate(it.route)
+                            }
+                        )
+                    }
+                ) {
+                    Navigation(navController)
+                }
+
+
+            }
         }
     }
 }
 
 @Composable
-fun NavigationComp(){
+fun Navigation(nav: NavHostController) {
+    NavHost(navController = nav, startDestination = "home") {
+        composable("home") {
+            HomeScreen()
+        }
+        composable("chat") {
+            ChatScreen()
+        }
+        composable("settings") {
+            SettingScreen()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun BottomNav(
+    items: List<BottomNavItem>,
+    nav: NavController,
+    modifier: Modifier = Modifier,
+    onItemClick: (BottomNavItem) -> Unit
+) {
+    val backStack = nav.currentBackStackEntryAsState()
+    BottomNavigation(
+        backgroundColor = Color.DarkGray,
+        modifier = modifier,
+        elevation = 5.dp
+    ) {
+        items.forEach {
+            val selected = it.route == backStack.value?.destination?.route
+            BottomNavigationItem(
+                selected = it.route == nav.currentDestination?.route,
+                onClick = { onItemClick(it) },
+                selectedContentColor = Color.Green,
+                unselectedContentColor = Color.Gray,
+                icon = {
+                       Column(horizontalAlignment = CenterHorizontally) {
+                           if(it.badgeCount > 0){
+                               BadgeBox(
+                                   badgeContent = {
+                                       Text(it.badgeCount.toString())
+                                   }
+                               ) {
+                                   Icon(
+                                       imageVector = it.icon,
+                                       contentDescription = it.name
+                                   )
+                               }
+                           }
+                           else{
+                               Icon(
+                                   imageVector = it.icon,
+                                   contentDescription = it.name
+                               )
+                           }
+                           if(selected){
+                               Text(
+                                   text = it.name,
+                                   textAlign = TextAlign.Center,
+                                   fontSize = 10.sp
+                               )
+
+                           }
+                       }
+                },
+            )
+
+
+        }
+
+    }
 
 }
 
 @Composable
-fun CircularProgressbar(percentage: Float,
-number: Int, fontSize: TextUnit = 28.sp, radius: Dp =50.dp,
-color: Color = Color.Red, storkeWidth: Dp = 20.dp, aniDur: Int = 1000,
-aniDelay: Int = 0
-){
+fun HomeScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Home Screen")
+    }
+}
+
+@Composable
+fun ChatScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Chat Screen")
+    }
+}
+
+@Composable
+fun SettingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Setting Screen")
+    }
+}
+
+@Composable
+fun CircularProgressbar(
+    percentage: Float,
+    number: Int, fontSize: TextUnit = 28.sp, radius: Dp = 50.dp,
+    color: Color = Color.Red, storkeWidth: Dp = 20.dp, aniDur: Int = 1000,
+    aniDelay: Int = 0
+) {
     var aniPlayed by remember {
         mutableStateOf(false)
     }
-    val currPer = animateFloatAsState(targetValue = if (aniPlayed)
-        percentage else 0f, animationSpec = tween(durationMillis = aniDur,
-    delayMillis = aniDelay))
-    
-    LaunchedEffect(key1 = true ){
+    val currPer = animateFloatAsState(
+        targetValue = if (aniPlayed)
+            percentage else 0f, animationSpec = tween(
+            durationMillis = aniDur,
+            delayMillis = aniDelay
+        )
+    )
+
+    LaunchedEffect(key1 = true) {
         aniPlayed = true
     }
 
-    Box(contentAlignment = Alignment.Center,
-    modifier = Modifier.size(radius * 2f)){
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(radius * 2f)
+    ) {
 
         //canvas is used to draw your shape
-        Canvas(modifier = Modifier.size(radius * 2f)){
-            drawArc(color = color,
-            -90f,
-            360 * currPer.value,
-            useCenter = false,
-            style = Stroke(storkeWidth.toPx(), cap = StrokeCap.Round ))
+        Canvas(modifier = Modifier.size(radius * 2f)) {
+            drawArc(
+                color = color,
+                -90f,
+                360 * currPer.value,
+                useCenter = false,
+                style = Stroke(storkeWidth.toPx(), cap = StrokeCap.Round)
+            )
         }
 
-        Text(text = (currPer.value * number).toInt().toString(),
+        Text(
+            text = (currPer.value * number).toInt().toString(),
             color = Color.Black,
             fontSize = fontSize,
             fontWeight = FontWeight.Bold
@@ -114,24 +262,24 @@ aniDelay: Int = 0
 }
 
 @Composable
-fun Card(){
+fun Card() {
     //card work
-//            val painter = painterResource(id = R.drawable.ic_launcher_background)
-//            val des = "image card text"
-//            val title = "image card title"
+            val painter = painterResource(id = R.drawable.ic_launcher_background)
+            val des = "image card text"
+            val title = "image card title"
 
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth(.5f)
-//                    .padding(16.dp)
-//            ) {
-//                ImageCard(painter = painter, content = des, title = title)
-//            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(.5f)
+                    .padding(16.dp)
+            ) {
+                ImageCard(painter = painter, content = des, title = title)
+            }
 }
 
 
 @Composable
-fun State(){
+fun State() {
     //state with clicks
     //ColorBox(Modifier.fillMaxSize())
 
@@ -163,7 +311,7 @@ fun State(){
 }
 
 @Composable
-fun Snackbar(){
+fun Snackbar() {
 
     //provide a layout that works well together with material design
     //layout in compose this will help in already existing
@@ -218,7 +366,7 @@ fun Snackbar(){
 }
 
 @Composable
-fun List(){
+fun List() {
     //list
 
     //these will load lazily
@@ -272,22 +420,26 @@ fun List(){
 }
 
 @Composable
-fun Animation(){
+fun Animation() {
     var sizeState by remember {
         mutableStateOf(200.dp)
     }
-    val size  by animateDpAsState(targetValue = sizeState,
-    //apply animation curve, dela y
+    val size by animateDpAsState(
+        targetValue = sizeState,
+        //apply animation curve, dela y
         tween(
             durationMillis = 3000,
             delayMillis = 300,
             easing = LinearOutSlowInEasing
-        ))
-    Box(modifier = Modifier
-        .size(size = size)
-        .background(Color.Red),
-    contentAlignment = Alignment.Center) {
-        Button(onClick = { sizeState += 50.dp}) {
+        )
+    )
+    Box(
+        modifier = Modifier
+            .size(size = size)
+            .background(Color.Red),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(onClick = { sizeState += 50.dp }) {
             Text("Increase size")
         }
 
@@ -296,19 +448,19 @@ fun Animation(){
 }
 
 @Composable
-fun ConstrainLayout(){
+fun ConstrainLayout() {
     val const = ConstraintSet {
         val greenBox = createRefFor("greenbox")
         val redBox = createRefFor("redbox")
 
-        constrain(greenBox){
+        constrain(greenBox) {
             top.linkTo(parent.top)
             start.linkTo(parent.start)
             width = Dimension.value(100.dp)
             height = Dimension.value(100.dp)
         }
 
-        constrain(redBox){
+        constrain(redBox) {
             top.linkTo(parent.top)
             start.linkTo(greenBox.end)
             end.linkTo(parent.end)
@@ -316,18 +468,21 @@ fun ConstrainLayout(){
             height = Dimension.value(100.dp)
         }
         //add chain
-        createHorizontalChain(greenBox,redBox,chainStyle =  ChainStyle.Spread)
+        createHorizontalChain(greenBox, redBox, chainStyle = ChainStyle.Spread)
     }
-    ConstraintLayout(constraintSet = const,modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier
-            .background(Color.Green)
-            .layoutId("greenbox"))
+    ConstraintLayout(constraintSet = const, modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .background(Color.Green)
+                .layoutId("greenbox")
+        )
 
-        Box(modifier = Modifier
-            .background(Color.Red)
-            .layoutId("redbox"))
+        Box(
+            modifier = Modifier
+                .background(Color.Red)
+                .layoutId("redbox")
+        )
     }
-
 
 
 }
@@ -397,3 +552,5 @@ fun ColorBox(modifier: Modifier = Modifier) {
         }
     )
 }
+
+
